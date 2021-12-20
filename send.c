@@ -13,7 +13,7 @@
 #define SHM_SIZE 4 
 #define SHM_NAME "memory"
 #define PROJ_ID 0xDEADBEEF
-#define N_SEMAPHORES 9
+#define N_SEMAPHORES 11
 
 const int POISON    = -1;
 const int MAX_CNTR  = 100; // maximum possible value of the
@@ -21,15 +21,17 @@ const int MAX_CNTR  = 100; // maximum possible value of the
 
 enum
 {
-    THE_ONLY_SENDER   = 0,
-    THE_ONLY_RECEIVER = 1,
-    SENDER_CONNECT    = 2,
-    RECEIVER_CONNECT  = 3,
-    SUM_RECEIVERS     = 4,
-    SUM_SENDERS       = 5,
-    SUM_BOTH          = 6,
-    EMPTY             = 7,
-    FULL              = 8
+    THE_ONLY_SENDER     = 0,
+    THE_ONLY_RECEIVER   = 1,
+    SENDER_CONNECT      = 2,
+    RECEIVER_CONNECT    = 3,
+    SUM_RECEIVERS       = 4,
+    SUM_SENDERS         = 5,
+	SUM_BOTH			= 6,
+    SUM_RECEIVERS_CONST = 7,
+	SUM_SENDERS_CONST   = 8,
+    EMPTY               = 9,
+    FULL                = 10
 };
 
 union semun 
@@ -198,9 +200,9 @@ int main(int argc, char* argv[])
 
 /* ----------------------------CONNECTED----------------------------- */
 
-    struct sembuf commands[5];
+    struct sembuf commands[6];
 
-    int SUM_RECEIVERS_value = semctl(sem_id, SUM_RECEIVERS, GETVAL);
+    const int SUM_RECEIVERS_val = semctl(sem_id, SUM_RECEIVERS, GETVAL);
 
     for(;;)
     {
@@ -208,17 +210,25 @@ int main(int argc, char* argv[])
 /*------------------------------------------------------*/
 /* handles the situation when our current partner dies  */
 /*          and the next one replaces it:               */
-/*  aborts if SUM_RECEIVERS' value > (SUM_BOTH's / 2)   */
 
-        commands[0].sem_num =  SUM_BOTH;
-        commands[0].sem_op  = -SUM_RECEIVERS_value * 2;
-        commands[0].sem_flg =  IPC_NOWAIT;
-                                                             
-        commands[1].sem_num =  SUM_BOTH;
-        commands[1].sem_op  =  SUM_RECEIVERS_value * 2;
-        commands[1].sem_flg =  0;
+//init SUM_RECEIVERS_CONST with the correct receiver's number:
 
-/* otherwise, executes the following commands (2 - 4)   */
+		commands[0].sem_num =  SUM_RECEIVERS_CONST;
+		commands[0].sem_op  = -semctl(sem_id, \
+							          SUM_RECEIVERS_CONST, GETVAL);
+		commands[0].sem_flg =  0;
+
+		commands[1].sem_num =  SUM_RECEIVERS_CONST;
+		commands[1].sem_op  = +SUM_RECEIVERS_val;
+		commands[1].sem_flg =  0;
+
+//abort if it's less than the actual receiver's number:
+
+		commands[2].sem_num =  SUM_RECEIVERS_CONST;
+		commands[2].sem_op  = -semctl(sem_id, SUM_RECEIVERS, GETVAL);
+		commands[2].sem_flg =  IPC_NOWAIT;
+
+/* otherwise, executes the following commands (3 - 5)   */
 /*------------------------------------------------------*/
 
 
@@ -226,13 +236,13 @@ int main(int argc, char* argv[])
 /*   if our partner has disconnected for some reason,   */
 /*                      aborts                          */
 
-        commands[2].sem_num = RECEIVER_CONNECT;
-        commands[2].sem_op  = -1;
-        commands[2].sem_flg = IPC_NOWAIT;
-
         commands[3].sem_num = RECEIVER_CONNECT;
-        commands[3].sem_op  = 1;
-        commands[3].sem_flg = 0;
+        commands[3].sem_op  = -1;
+        commands[3].sem_flg = IPC_NOWAIT;
+
+        commands[4].sem_num = RECEIVER_CONNECT;
+        commands[4].sem_op  = 1;
+        commands[4].sem_flg = 0;
 
 /*    otherwise (if everything's good), blocks until    */
 /*    the receiver reads a portion of data from the     */
@@ -240,16 +250,16 @@ int main(int argc, char* argv[])
 
 /*  (or if it is the first iteration, just keeps going) */
 
-        commands[4].sem_num = EMPTY;
-        commands[4].sem_op  = -1;
-        commands[4].sem_flg = 0;
+        commands[5].sem_num = EMPTY;
+        commands[5].sem_op  = -1;
+        commands[5].sem_flg = 0;
 
 /*------------------------------------------------------*/
 
 ///////////////////////////////////////////////resource - shmem (start)
 ///////////////////////////////////////////////sender and receiver
 
-        if ( semop(sem_id, commands, 5) < 0 )
+        if ( semop(sem_id, commands, 6) < 0 )
         {
             perror("the sender before reading from the file"\
                    " - the receiver has disconnected ");
@@ -269,17 +279,25 @@ int main(int argc, char* argv[])
 /*------------------------------------------------------*/
 /* handles the situation when our current partner dies  */
 /*          and the next one replaces it:               */
-/*  aborts if SUM_RECEIVERS' value > (SUM_BOTH's / 2)   */
 
-        commands[0].sem_num =  SUM_BOTH;
-        commands[0].sem_op  = -SUM_RECEIVERS_value * 2;
-        commands[0].sem_flg =  IPC_NOWAIT;
+//init SUM_RECEIVERS_CONST with the correct receiver's number:
 
-        commands[1].sem_num =  SUM_BOTH;
-        commands[1].sem_op  =  SUM_RECEIVERS_value * 2;
-        commands[1].sem_flg =  0;
+		commands[0].sem_num =  SUM_RECEIVERS_CONST;
+		commands[0].sem_op  = -semctl(sem_id, \
+							          SUM_RECEIVERS_CONST, GETVAL);
+		commands[0].sem_flg =  0;
 
-/* otherwise, executes the following commands (2 - 4)   */
+		commands[1].sem_num =  SUM_RECEIVERS_CONST;
+		commands[1].sem_op  = +SUM_RECEIVERS_val;
+		commands[1].sem_flg =  0;
+
+//abort if is's less than the actual receiver's number:
+
+		commands[2].sem_num =  SUM_RECEIVERS_CONST;
+		commands[2].sem_op  = -semctl(sem_id, SUM_RECEIVERS, GETVAL);
+		commands[2].sem_flg =  IPC_NOWAIT;
+
+/* otherwise, executes the following commands (3 - 5)   */
 /*------------------------------------------------------*/
 
 
@@ -287,25 +305,25 @@ int main(int argc, char* argv[])
 /*   if our partner has disconnected for some reason,   */
 /*                      aborts                          */
 
-        commands[2].sem_num = RECEIVER_CONNECT;
-        commands[2].sem_op  = -1;
-        commands[2].sem_flg = IPC_NOWAIT;
-
         commands[3].sem_num = RECEIVER_CONNECT;
-        commands[3].sem_op  = 1;
-        commands[3].sem_flg = 0;
+        commands[3].sem_op  = -1;
+        commands[3].sem_flg = IPC_NOWAIT;
+
+        commands[4].sem_num = RECEIVER_CONNECT;
+        commands[4].sem_op  = 1;
+        commands[4].sem_flg = 0;
 
 /*      otherwise (if everything's good), unblocks      */
 /*          the receiver, so it can read from           */
 /*               the shared memory again                */
 
-        commands[4].sem_num = FULL;
-        commands[4].sem_op  = 1;
-        commands[4].sem_flg = 0;
+        commands[5].sem_num = FULL;
+        commands[5].sem_op  = 1;
+        commands[5].sem_flg = 0;
 
 /*------------------------------------------------------*/
 
-        if ( semop(sem_id, commands, 5) < 0 )
+        if ( semop(sem_id, commands, 6) < 0 )
         {
             perror("the sender after reading from the file"\
                    " - the reader has disconnected ");

@@ -12,21 +12,23 @@
 #define SHM_SIZE 4 
 #define SHM_NAME "memory"
 #define PROJ_ID 0xDEADBEEF
-#define N_SEMAPHORES 9
+#define N_SEMAPHORES 11
 
 const int POISON = -1;
 
 enum
 {
-    THE_ONLY_SENDER   = 0,
-    THE_ONLY_RECEIVER = 1,
-    SENDER_CONNECT    = 2,
-    RECEIVER_CONNECT  = 3,
-    SUM_RECEIVERS     = 4,
-    SUM_SENDERS       = 5,
-    SUM_BOTH          = 6,
-    EMPTY             = 7,
-    FULL              = 8
+    THE_ONLY_SENDER   	= 0,
+    THE_ONLY_RECEIVER 	= 1,
+    SENDER_CONNECT    	= 2,
+    RECEIVER_CONNECT  	= 3,
+    SUM_RECEIVERS     	= 4,
+    SUM_SENDERS       	= 5,
+    SUM_BOTH          	= 6,
+	SUM_RECEIVERS_CONST = 7,
+	SUM_SENDERS_CONST	= 8,
+    EMPTY             	= 9,
+    FULL              	= 10
 };
 
 int main(int argc, char* argv[])
@@ -129,9 +131,9 @@ int main(int argc, char* argv[])
 
 /* -----------------------------CONNECTED---------------------------- */
 
-    struct sembuf commands[5]; 
+    struct sembuf commands[6];
 
-    int SUM_SENDERS_value = semctl(sem_id, SUM_SENDERS, GETVAL);
+    const int SUM_SENDERS_val = semctl(sem_id, SUM_SENDERS, GETVAL);
 
     for(;;) 
     {
@@ -139,17 +141,25 @@ int main(int argc, char* argv[])
 /*------------------------------------------------------*/
 /* handles the situation when our current partner dies  */
 /*          and the next one replaces it:               */
-/*   aborts if SUM_SENDERS' value > (SUM_BOTH's / 2)    */
 
-        commands[0].sem_num =  SUM_BOTH;
-        commands[0].sem_op  = -SUM_SENDERS_value * 2;
-        commands[0].sem_flg =  IPC_NOWAIT;
+//init SUM_SENDERS_CONST with the correct sender's number:
 
-        commands[1].sem_num =  SUM_BOTH;
-        commands[1].sem_op  =  SUM_SENDERS_value * 2;
+        commands[0].sem_num =  SUM_SENDERS_CONST;
+        commands[0].sem_op  = -semctl(sem_id, \
+								      SUM_SENDERS_CONST, GETVAL);
+        commands[0].sem_flg =  0;
+
+        commands[1].sem_num =  SUM_SENDERS_CONST;
+        commands[1].sem_op  = +SUM_SENDERS_val;
         commands[1].sem_flg =  0;
 
-/* otherwise, executes the following commands (2 - 4)   */
+//abort if it's less than the actual sender's number:
+
+		commands[2].sem_num =  SUM_SENDERS_CONST;
+		commands[2].sem_op  = -semctl(sem_id, SUM_SENDERS, GETVAL);
+		commands[2].sem_flg =  IPC_NOWAIT;
+
+/* otherwise, executes the following commands (3 - 5)   */
 /*------------------------------------------------------*/
 
 
@@ -157,28 +167,28 @@ int main(int argc, char* argv[])
 /*   if our partner has disconnected for some reasons,  */
 /*                      aborts                          */
 
-        commands[2].sem_num = SENDER_CONNECT;
-        commands[2].sem_op  = -1;
-        commands[2].sem_flg = IPC_NOWAIT;
-
         commands[3].sem_num = SENDER_CONNECT;
-        commands[3].sem_op  = 1;
-        commands[3].sem_flg = 0;
+        commands[3].sem_op  = -1;
+        commands[3].sem_flg = IPC_NOWAIT;
+
+        commands[4].sem_num = SENDER_CONNECT;
+        commands[4].sem_op  = 1;
+        commands[4].sem_flg = 0;
 
 /*    otherwise (if everything's good), blocks until    */
 /*    the sender writes a new portion of data to the    */
 /*                    shared memory                     */
 
-        commands[4].sem_num = FULL;
-        commands[4].sem_op  = -1;
-        commands[4].sem_flg = 0;
+        commands[5].sem_num = FULL;
+        commands[5].sem_op  = -1;
+        commands[5].sem_flg = 0;
 
 /*------------------------------------------------------*/
 
 ///////////////////////////////////////////////resource - shmem (start)
 ///////////////////////////////////////////////sender and receiver
 
-        if ( semop(sem_id, commands, 5) < 0 )
+        if ( semop(sem_id, commands, 6) < 0 )
         {
             nBytes = *((int*) shm_ptr);
 
@@ -205,17 +215,25 @@ int main(int argc, char* argv[])
 /*------------------------------------------------------*/
 /* handles the situation when our current partner dies  */
 /*          and the next one replaces it:               */
-/*   aborts if SUM_SENDERS' value > (SUM_BOTH's / 2)    */
 
-        commands[0].sem_num =  SUM_BOTH;
-        commands[0].sem_op  = -SUM_SENDERS_value * 2;
-        commands[0].sem_flg =  IPC_NOWAIT;
+//init SUM_SENDERS_CONST with the correct sender's number:
 
-        commands[1].sem_num =  SUM_BOTH;
-        commands[1].sem_op  =  SUM_SENDERS_value * 2;
+        commands[0].sem_num =  SUM_SENDERS_CONST;
+        commands[0].sem_op  = -semctl(sem_id, \
+								      SUM_SENDERS_CONST, GETVAL);
+        commands[0].sem_flg =  0;
+
+        commands[1].sem_num =  SUM_SENDERS_CONST;
+        commands[1].sem_op  = +SUM_SENDERS_val;
         commands[1].sem_flg =  0;
 
-/* otherwise, executes the following commands (2 - 4)   */
+//abort if it's less than the actual sender's number:
+
+		commands[2].sem_num =  SUM_SENDERS_CONST;
+		commands[2].sem_op  = -semctl(sem_id, SUM_SENDERS, GETVAL);
+		commands[2].sem_flg =  IPC_NOWAIT;
+
+/* otherwise, executes the following commands (3 - 5)   */
 /*------------------------------------------------------*/
 
 
@@ -223,25 +241,25 @@ int main(int argc, char* argv[])
 /*   if our partner has disconnected for some reasons,  */
 /*                      aborts                          */
 
-        commands[2].sem_num = SENDER_CONNECT;
-        commands[2].sem_op  = -1;
-        commands[2].sem_flg = IPC_NOWAIT;
-
         commands[3].sem_num = SENDER_CONNECT;
-        commands[3].sem_op  = 1;
-        commands[3].sem_flg = 0;
+        commands[3].sem_op  = -1;
+        commands[3].sem_flg = IPC_NOWAIT;
+
+        commands[4].sem_num = SENDER_CONNECT;
+        commands[4].sem_op  = 1;
+        commands[4].sem_flg = 0;
 
 /*      otherwise (if everything's good), unblocks      */
 /*          the sender, so it can write to the          */
 /*                  shared memory again                 */
 
-        commands[4].sem_num = EMPTY;
-        commands[4].sem_op  = 1;
-        commands[4].sem_flg = 0;
+        commands[5].sem_num = EMPTY;
+        commands[5].sem_op  = 1;
+        commands[5].sem_flg = 0;
 
 /*------------------------------------------------------*/
 
-        if ( semop(sem_id, commands, 5) < 0 && nBytes)
+        if ( semop(sem_id, commands, 6) < 0 && nBytes)
           // if the sender has disconnected but we haven't
           // received the whole file yet
         {

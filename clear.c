@@ -11,7 +11,7 @@
 
 #define SHM_NAME "memory"
 #define PROJ_ID 0xDEADBEEF
-#define N_SEMAPHORES 9
+#define N_SEMAPHORES 11
 
 int main()
 {   
