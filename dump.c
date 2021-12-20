@@ -12,7 +12,7 @@
 #define SHM_SIZE 4
 #define SHM_NAME "memory"
 #define PROJ_ID 0xDEADBEEF
-#define NUM_SEMAPHORES 9
+#define N_SEMAPHORES 9
 
 enum
 {
@@ -49,7 +49,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    int sem_id = semget(key, NUM_SEMAPHORES, IPC_CREAT | 0666);
+    int sem_id = semget(key, N_SEMAPHORES, IPC_CREAT | 0666);
     if (sem_id < 0)
     {
         perror("semget ");
