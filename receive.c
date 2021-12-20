@@ -61,8 +61,8 @@ int main(int argc, char* argv[])
     struct sembuf theOnlyReceiver[2];
 
     theOnlyReceiver[0].sem_num = THE_ONLY_RECEIVER; // wait until
-    theOnlyReceiver[0].sem_op  = 0;           // there's no another
-    theOnlyReceiver[0].sem_flg = 0;           // receiver, so
+    theOnlyReceiver[0].sem_op  = 0;           // there're no other
+    theOnlyReceiver[0].sem_flg = 0;           // receivers, so
                                               // the semaphore
                                               // THE_ONLY_RECEIVER
                                               // is equal to
@@ -80,7 +80,8 @@ int main(int argc, char* argv[])
                                               // it back to zero
                                               // when we are done
 
-/////////////////////////////////////////resource - shmem#1 start
+/////////////////////////////////////////resource - shmem (start)
+/////////////////////////////////////////receivers with each other
 
     if ( semop(sem_id, theOnlyReceiver, 2) < 0 )
     {
@@ -174,7 +175,9 @@ int main(int argc, char* argv[])
 
 /*------------------------------------------------------*/
 
-///////////////////////////////////////////////resource - shmem#2 start     
+///////////////////////////////////////////////resource - shmem (start)
+///////////////////////////////////////////////sender and receiver
+
         if ( semop(sem_id, commands, 5) < 0 )
         {
             nBytes = *((int*) shm_ptr);
@@ -248,7 +251,8 @@ int main(int argc, char* argv[])
             return EXIT_FAILURE;
         }
 
-////////////////////////////////////////////////resource - shmem#2 end
+/////////////////////////////////////////////////resource - shmem (end)
+/////////////////////////////////////////////////sender and receiver
 
         if (!nBytes) // if the whole file has been received successfully
             break;   // we are done
@@ -265,4 +269,5 @@ int main(int argc, char* argv[])
 
 /*                  the receiver disconnects                    */
 
-/////////////////////////////////////////////resource - shmem#1 end
+///////////////////////////////////////////////resource - shmem (end)
+///////////////////////////////////////////////recievers with each other

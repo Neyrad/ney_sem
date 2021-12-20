@@ -79,15 +79,15 @@ int main(int argc, char* argv[])
 
     struct sembuf theOnlySender[2];
 
-    theOnlySender[0].sem_num = THE_ONLY_SENDER; // wait until there's
-    theOnlySender[0].sem_op = 0;              // no another sender
+    theOnlySender[0].sem_num = THE_ONLY_SENDER; // wait until there're
+    theOnlySender[0].sem_op  = 0;             // no other senders
     theOnlySender[0].sem_flg = 0;             // so the semaphore
                                               // THE_ONLY_SENDER is
                                               // equal to
                                               // zero (available)
 
     theOnlySender[1].sem_num = THE_ONLY_SENDER; // to point out that
-    theOnlySender[1].sem_op = 1;              // this sender is
+    theOnlySender[1].sem_op  = 1;             // this sender is
     theOnlySender[1].sem_flg = SEM_UNDO;      // working (the semaphore
                                               // THE_ONLY_SENDER is
                                               // equal to
@@ -98,7 +98,8 @@ int main(int argc, char* argv[])
                                               // it back to zero
                                               // when we are done
 
-///////////////////////////////////////////////resource - shmem#1 start
+///////////////////////////////////////////////resource - shmem (start)
+///////////////////////////////////////////////senders with each other
 
     if ( semop(sem_id, theOnlySender, 2) < 0 )
     {
@@ -122,12 +123,14 @@ int main(int argc, char* argv[])
 
     semop(sem_id, ready2connect, 3);
 
-////////////////////////////////////////////resource - semaphores start 
+///////////////////////////////////////////resource - semaphores (start)
+///////////////////////////////////////////sender and receiver
 
     initSem(sem_id, FULL, 0);            // kinda MUTEX
     initSem(sem_id, EMPTY, 1);           //  <--------
 
-////////////////////////////////////////////resource - semaphores end
+///////////////////////////////////////////resource - semaphores (end)
+///////////////////////////////////////////sender and receiver
 
     char* shm_ptr = shmat (shm_id, NULL, 0);
     if ( (void*)shm_ptr == (void*)(-1) )
@@ -243,7 +246,8 @@ int main(int argc, char* argv[])
 
 /*------------------------------------------------------*/
 
-///////////////////////////////////////////////resource - shmem#2 start
+///////////////////////////////////////////////resource - shmem (start)
+///////////////////////////////////////////////sender and receiver
 
         if ( semop(sem_id, commands, 5) < 0 )
         {
@@ -308,7 +312,8 @@ int main(int argc, char* argv[])
             return EXIT_FAILURE;
         }
 
-////////////////////////////////////////////////resource - shmem#2 end
+////////////////////////////////////////////////resource - shmem (end)
+////////////////////////////////////////////////sender and receiver
 
         if (!nBytes) // if the whole file has been sent successfully
             break;   // we are done
@@ -327,4 +332,5 @@ int main(int argc, char* argv[])
 
 /*                  the sender disconnects                  */
 
-///////////////////////////////////////////////resource - shmem#1 end
+///////////////////////////////////////////////resource - shmem (end)
+///////////////////////////////////////////////senders with each other
