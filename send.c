@@ -27,9 +27,9 @@ enum
     RECEIVER_CONNECT    = 3,
     SUM_RECEIVERS       = 4,
     SUM_SENDERS         = 5,
-	SUM_BOTH			= 6,
+    SUM_BOTH            = 6,
     SUM_RECEIVERS_CONST = 7,
-	SUM_SENDERS_CONST   = 8,
+    SUM_SENDERS_CONST   = 8,
     EMPTY               = 9,
     FULL                = 10
 };
@@ -213,20 +213,20 @@ int main(int argc, char* argv[])
 
 //init SUM_RECEIVERS_CONST with the correct receiver's number:
 
-		commands[0].sem_num =  SUM_RECEIVERS_CONST;
-		commands[0].sem_op  = -semctl(sem_id, \
-							          SUM_RECEIVERS_CONST, GETVAL);
-		commands[0].sem_flg =  0;
+        commands[0].sem_num =  SUM_RECEIVERS_CONST;
+        commands[0].sem_op  = -semctl(sem_id, \
+                                      SUM_RECEIVERS_CONST, GETVAL);
+        commands[0].sem_flg =  0;
 
-		commands[1].sem_num =  SUM_RECEIVERS_CONST;
-		commands[1].sem_op  = +SUM_RECEIVERS_val;
-		commands[1].sem_flg =  0;
+        commands[1].sem_num =  SUM_RECEIVERS_CONST;
+        commands[1].sem_op  = +SUM_RECEIVERS_val;
+        commands[1].sem_flg =  0;
 
 //abort if it's less than the actual receiver's number:
 
-		commands[2].sem_num =  SUM_RECEIVERS_CONST;
-		commands[2].sem_op  = -semctl(sem_id, SUM_RECEIVERS, GETVAL);
-		commands[2].sem_flg =  IPC_NOWAIT;
+        commands[2].sem_num =  SUM_RECEIVERS_CONST;
+        commands[2].sem_op  = -semctl(sem_id, SUM_RECEIVERS, GETVAL);
+        commands[2].sem_flg =  IPC_NOWAIT;
 
 /* otherwise, executes the following commands (3 - 5)   */
 /*------------------------------------------------------*/
@@ -282,20 +282,20 @@ int main(int argc, char* argv[])
 
 //init SUM_RECEIVERS_CONST with the correct receiver's number:
 
-		commands[0].sem_num =  SUM_RECEIVERS_CONST;
-		commands[0].sem_op  = -semctl(sem_id, \
-							          SUM_RECEIVERS_CONST, GETVAL);
-		commands[0].sem_flg =  0;
+        commands[0].sem_num =  SUM_RECEIVERS_CONST;
+        commands[0].sem_op  = -semctl(sem_id, \
+                                      SUM_RECEIVERS_CONST, GETVAL);
+        commands[0].sem_flg =  0;
 
-		commands[1].sem_num =  SUM_RECEIVERS_CONST;
-		commands[1].sem_op  = +SUM_RECEIVERS_val;
-		commands[1].sem_flg =  0;
+        commands[1].sem_num =  SUM_RECEIVERS_CONST;
+        commands[1].sem_op  = +SUM_RECEIVERS_val;
+        commands[1].sem_flg =  0;
 
 //abort if is's less than the actual receiver's number:
 
-		commands[2].sem_num =  SUM_RECEIVERS_CONST;
-		commands[2].sem_op  = -semctl(sem_id, SUM_RECEIVERS, GETVAL);
-		commands[2].sem_flg =  IPC_NOWAIT;
+        commands[2].sem_num =  SUM_RECEIVERS_CONST;
+        commands[2].sem_op  = -semctl(sem_id, SUM_RECEIVERS, GETVAL);
+        commands[2].sem_flg =  IPC_NOWAIT;
 
 /* otherwise, executes the following commands (3 - 5)   */
 /*------------------------------------------------------*/

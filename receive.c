@@ -18,17 +18,17 @@ const int POISON = -1;
 
 enum
 {
-    THE_ONLY_SENDER   	= 0,
-    THE_ONLY_RECEIVER 	= 1,
-    SENDER_CONNECT    	= 2,
-    RECEIVER_CONNECT  	= 3,
-    SUM_RECEIVERS     	= 4,
-    SUM_SENDERS       	= 5,
-    SUM_BOTH          	= 6,
-	SUM_RECEIVERS_CONST = 7,
-	SUM_SENDERS_CONST	= 8,
-    EMPTY             	= 9,
-    FULL              	= 10
+    THE_ONLY_SENDER     = 0,
+    THE_ONLY_RECEIVER   = 1,
+    SENDER_CONNECT      = 2,
+    RECEIVER_CONNECT    = 3,
+    SUM_RECEIVERS       = 4,
+    SUM_SENDERS         = 5,
+    SUM_BOTH            = 6,
+    SUM_RECEIVERS_CONST = 7,
+    SUM_SENDERS_CONST   = 8,
+    EMPTY               = 9,
+    FULL                = 10
 };
 
 int main(int argc, char* argv[])
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
 
         commands[0].sem_num =  SUM_SENDERS_CONST;
         commands[0].sem_op  = -semctl(sem_id, \
-								      SUM_SENDERS_CONST, GETVAL);
+                                      SUM_SENDERS_CONST, GETVAL);
         commands[0].sem_flg =  0;
 
         commands[1].sem_num =  SUM_SENDERS_CONST;
@@ -155,9 +155,9 @@ int main(int argc, char* argv[])
 
 //abort if it's less than the actual sender's number:
 
-		commands[2].sem_num =  SUM_SENDERS_CONST;
-		commands[2].sem_op  = -semctl(sem_id, SUM_SENDERS, GETVAL);
-		commands[2].sem_flg =  IPC_NOWAIT;
+        commands[2].sem_num =  SUM_SENDERS_CONST;
+        commands[2].sem_op  = -semctl(sem_id, SUM_SENDERS, GETVAL);
+        commands[2].sem_flg =  IPC_NOWAIT;
 
 /* otherwise, executes the following commands (3 - 5)   */
 /*------------------------------------------------------*/
@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
 
         commands[0].sem_num =  SUM_SENDERS_CONST;
         commands[0].sem_op  = -semctl(sem_id, \
-								      SUM_SENDERS_CONST, GETVAL);
+                                      SUM_SENDERS_CONST, GETVAL);
         commands[0].sem_flg =  0;
 
         commands[1].sem_num =  SUM_SENDERS_CONST;
@@ -229,9 +229,9 @@ int main(int argc, char* argv[])
 
 //abort if it's less than the actual sender's number:
 
-		commands[2].sem_num =  SUM_SENDERS_CONST;
-		commands[2].sem_op  = -semctl(sem_id, SUM_SENDERS, GETVAL);
-		commands[2].sem_flg =  IPC_NOWAIT;
+        commands[2].sem_num =  SUM_SENDERS_CONST;
+        commands[2].sem_op  = -semctl(sem_id, SUM_SENDERS, GETVAL);
+        commands[2].sem_flg =  IPC_NOWAIT;
 
 /* otherwise, executes the following commands (3 - 5)   */
 /*------------------------------------------------------*/
